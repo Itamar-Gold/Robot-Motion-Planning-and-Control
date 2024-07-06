@@ -1,0 +1,26 @@
+Test1:
+
+Links = [1.1, 1.6, 1.8]
+angles (degrees) = [0, 34.28, 116.02]
+base_join_pos = [0, 0, 0]
+firs_joint = [0, 0, 1.1]
+sec_joint = [0, 1.32, 2]
+end_effector = [0, 1.58, 0.22]
+
+Test2:
+
+Links = [1.1, 1.6, 1.8]
+angles (degrees) = [0, 34.04, -66.65]
+base_join_pos = [0, 0, 0]
+firs_joint = [0, 0, 1.1]
+sec_joint = [0, 1.33, 2]
+end_effector = [0, 0.99, 3.76]
+
+Test3:
+
+Links = [1.1, 1.6, 1.8]
+angles (degrees) = [0, 75.68, 145.77]
+base_join_pos = [0, 0, 0]
+firs_joint = [0, 0, 1.1]
+sec_joint = [0, 0.4, 2.65]
+end_effector = [0, 1.01, 0.96]
