@@ -2,39 +2,41 @@ import numpy as np
 import sympy as sp
 
 
-def forward_kinematics(thetas: [float], links: [float]) -> [float]:
+def forward_kinematics(thetas: [float], links: [float], thetad: [float], thetadd: [float]) -> [float]:
     """
     :param thetas:
     :param links:
     :return:
     """
 
+    # Converting deg to rad
+    thetas = np.deg2rad(thetas)
+
     # Kinematics Matrixes.
 
     r01 = np.array([
-        [np.cos(thetas[0]), - np.sin(thetas[0]), 0, 0],
-        [np.sin(thetas[0]), np.cos(thetas[0]), 0, 0],
+        [1, 0, 0, 0],
+        [0, 1, 0, links[0]],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
     ])
-
     r12 = np.array([
-        [1, 0, 0, 0],
-        [0, np.cos(thetas[1]), - np.sin(thetas[1]), 0],
-        [0, np.sin(thetas[1]), np.cos(thetas[1]), links[0]],
+        [np.cos(thetas[0]), 0, np.sin(thetas[0]), 0],
+        [0, 1, 0, 0],
+        [-np.sin(thetas[0]), 0, np.cos(thetas[0]), 0],
         [0, 0, 0, 1]
     ])
 
     r23 = np.array([
-        [1, 0, 0, 0],
-        [0, np.cos(thetas[2]), -np.sin(thetas[2]), links[1]],
-        [0, np.sin(thetas[2]), np.cos(thetas[2]), 0],
+        [np.cos(thetas[1]), -np.sin(thetas[1]), 0, links[1]*np.cos(thetas[1])],
+        [np.sin(thetas[1]), np.cos(thetas[1]), 0, links[1]*np.sin(thetas[1])],
+        [0, 0, 1, 0],
         [0, 0, 0, 1]
     ])
 
     r34 = np.array([
-        [1, 0, 0, 0],
-        [0, 1, 0, links[2]],
+        [np.cos(thetas[2]), -np.sin(thetas[2]), 0, links[2]*np.cos(thetas[2])],
+        [np.sin(thetas[2]), np.cos(thetas[2]), 0, links[2]*np.sin(thetas[2])],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
     ])
@@ -64,15 +66,16 @@ def forward_kinematics(thetas: [float], links: [float]) -> [float]:
 
     # Calculated Matrixes
 
-    r02 = np.dot(r01, r12)
-    r03 = np.dot(r02, r23)
-    r04 = np.dot(r03, r34)
+    r02 = np.matmul(r01, r12)
+    r03 = np.matmul(r02, r23)
+    r04 = np.matmul(r03, r34)
 
-    ## Jacobian Matrix
+    # Position calculation
+    p = r04[0:3, 3:]
 
+    # Jacobian Matrix
     # Prismatic Vector
     v1 = np.array([0, 0, 1])
-    print(f'v1: ', v1)
 
     # Row 1-3, Column 1
     j1 = np.array([
@@ -81,29 +84,31 @@ def forward_kinematics(thetas: [float], links: [float]) -> [float]:
         [0, 0, 1]
     ])
 
-    j1 = np.dot(v1, j1)
+    j1 = np.matmul(v1, j1)
+    j1 = np.array([
+        [j1[0]],
+        [j1[1]],
+        [j1[2]]
+    ])
 
     # Row 1-3, Column 2
-    j2a = r01[0:3, 3:]
-    print(f'j2a: ', j2a)
-    j2b2 = j2a
-    j2a = np.dot(v1, j2a)
-    print(f'j2a: ', j2a)
+    j2a = r01[0:3, 0:3]
+    j2b2 = r01[0:3, 3:]
+    j2a = np.matmul(v1, j2a)
 
     j2b1 = r03[0:3, 3:]
 
     j2b = j2b1 - j2b2
-    print(f'j2b: ', j2b)
 
     j2 = np.array([
-        [(j2a[1] * j2b[2]) - (j2a[2] * j2b[1])],
-        [(j2a[2] * j2b[0]) - (j2a[0] * j2b[2])],
-        [(j2a[0] * j2b[1]) - (j2a[1] * j2b[0])]
+        (j2a[1] * j2b[2]) - (j2a[2] * j2b[1]),
+        (j2a[2] * j2b[0]) - (j2a[0] * j2b[2]),
+        (j2a[0] * j2b[1]) - (j2a[1] * j2b[0])
     ])
 
     # Row 1-3 Column 3
-    j3a = r02[0:3, 3:]
-    j3b2 = j3a
+    j3a = r02[0:3, 0:3]
+    j3b2 = r02[0:3, 3:]
     j3a = np.dot(v1, j3a)
 
     j3b1 = r03[0:3, 3:]
@@ -111,9 +116,9 @@ def forward_kinematics(thetas: [float], links: [float]) -> [float]:
     j3b = j3b1 - j3b2
 
     j3 = np.array([
-        [(j3a[1, 0] * j3b[2, 0]) - (j3a[2, 0] * j3b[1, 0])],
-        [(j3a[2, 0] * j3b[0, 0]) - (j3a[0, 0] * j3b[2, 0])],
-        [(j3a[0, 0] * j3b[1, 0]) - (j3a[1, 0] * j3b[0, 0])]
+        (j3a[1] * j3b[2]) - (j3a[2] * j3b[1]),
+        (j3a[2] * j3b[0]) - (j3a[0] * j3b[2]),
+        (j3a[0] * j3b[1]) - (j3a[1] * j3b[0])
     ])
 
     # Rotation / Orientation Vector
@@ -126,40 +131,34 @@ def forward_kinematics(thetas: [float], links: [float]) -> [float]:
     ])
 
     # Row 4-6, Column 2
-    j5 = j2a
+    j5 = np.array([
+        [j2a[0]],
+        [j2a[1]],
+        [j2a[2]]
+    ])
 
     # Row 4-6, Column 3
-    j6 = j3a
-
-    print(f'j1: ', j1)
-    print(f'j2: ', j2)
-    print(f'j3: ', j3)
+    j6 = np.array([
+        [j3a[0]],
+        [j3a[1]],
+        [j3a[2]]
+    ])
 
     # Creating the Jacobian Matrix
     jm1 = np.concatenate((j1, j2, j3), 1)
     jm2 = np.concatenate((j4, j5, j6), 1)
-    # debugging line 138
-    print(jm1.shape, jm2.shape)
     j = np.concatenate((jm1, jm2), 0)
+    jp = j[0:3, 0:3]
 
-    # Diff Eq.
-    xp, yp, zp = sp.symbols('x* y* z*')
-    wx, wy, wz = sp.symbols('wx wy wz')
-    the1p, the2p, the3p = sp.symbols('theta1* theta2* theta3*')
+    pdot = np.matmul(jp, thetad)
+    pdubeldot = pdot + np.matmul(jp, thetadd)
 
-    q = np.array([[the1p], [the2p], [the3p]])
-    e = np.dot(j, q)
+    # Debugging
+    print(f'pos: ', p)
+    print(f'pos speed: ', pdot)
+    print(f'pos exaleration: ', pdubeldot)
 
-    xp = e[0, 0]
-    yp = e[1, 0]
-    zp = e[2, 0]
-    wx = e[3, 0]
-    wy = e[4, 0]
-    wz = e[5, 0]
-
-    return [j, e, xp, yp, zp, wx, wy, wz]
-
-    ## WE NEED TO ADD A FEATCHER TO DESIDE THE DIRECTION OF THE TOOL TO THE END POINT
+    return p, pdot, pdubeldot
 
 
 def inverse_kinematics(position: [float], links: [float]) -> [float]:
