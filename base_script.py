@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from kinematics import inverse_kinematics as ik
-from kinematics import forward_kinematics as fk
+from kinematics_n_dynamics import inverse_kinematics as ik
+from kinematics_n_dynamics import forward_kinematics as fk
 from Astar_algorithm import a_star_algorithm
 
 export_to_excel = True
@@ -34,7 +34,7 @@ z_lim = np.linspace(-4, 4, 64, endpoint=False, retstep=True)
 
 # define the links lengths
 links = [1.1, 1.6, 1.8]
-initial_pos = (2, 2, 0)  # initial position of the end-effector
+initial_pos = (2, 1, 0)  # initial position of the end-effector
 target = (-2.5, 0, -2)  # set a target
 cylinder_center = (0, 0, 0)  # Center of the cylinder (x, y, z)
 cylinder_radius = 0.5  # Radius of the cylinder in the xz-plane
