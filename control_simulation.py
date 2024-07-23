@@ -4,7 +4,9 @@ from scipy.integrate import odeint
 from Astar_algorithm import a_star_algorithm
 import kinematics_n_dynamics as knd
 
-def pd_control(theta_desired, theta_current, theta_dot_current, Kp, Kd, links, masses):
+
+def pd_control(theta_desired: [float], theta_current: [float], theta_dot_current: [float],
+               Kp: [float], Kd: [float], links: [float], masses: [float]) -> [float]:
     # Calculate the error
     error = theta_desired - theta_current
 
@@ -20,7 +22,8 @@ def pd_control(theta_desired, theta_current, theta_dot_current, Kp, Kd, links, m
     return tau
 
 
-def simulate_system(y, t, links, masses, inertias, Kp, Kd, theta_desired):
+def simulate_system(y: [float], t: [float], links: [float], masses: [float],
+                    inertias: [float], Kp: [float], Kd: [float], theta_desired: [float]) -> [float]:
     # Unpack the state variables
     theta1, theta2, theta3, theta1_dot, theta2_dot, theta3_dot = y
 
@@ -101,7 +104,7 @@ fig.subplots_adjust(hspace=0.3)  # Adjust vertical space between subplots
 
 # Show the plot
 plt.show()
-plt.savefig(f'images/control_res.png')
+fig.savefig(f'images/control_res.png')
 x_y_z = []
 
 for j in range(len(sol[:, 0])):
